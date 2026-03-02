@@ -51,6 +51,7 @@
   "wizard.qa.prompt.enter_true_false": "Enter true/false",
   "wizard.qa.prompt.select_option": "Select option",
   "wizard.save.discarded": "Unsaved changes were discarded.",
+  "wizard.save.confirm_exit": "Save changes before exit? (Y/n)",
   "wizard.save.doctor_failed": "Save blocked: doctor failed",
   "wizard.save.empty_flow": "Save blocked: a flow must contain at least one step.",
   "wizard.save.done": "Saved changes.",

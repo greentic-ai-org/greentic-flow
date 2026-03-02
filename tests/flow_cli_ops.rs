@@ -53,6 +53,78 @@ fn wizard_menu_allows_exit_from_main_menu() {
 }
 
 #[test]
+fn wizard_can_emit_answers_and_schema_for_replay() {
+    let dir = tempdir().unwrap();
+    let answers_path = dir.path().join("wizard.answers.json");
+    let schema_path = dir.path().join("wizard.answers.schema.json");
+
+    cargo_bin_cmd!("greentic-flow")
+        .arg("wizard")
+        .arg(dir.path())
+        .arg("--emit-answers")
+        .arg(&answers_path)
+        .arg("--emit-schema")
+        .arg(&schema_path)
+        .write_stdin("0\n")
+        .assert()
+        .success();
+
+    assert!(answers_path.exists(), "answers should be emitted");
+    assert!(schema_path.exists(), "schema should be emitted");
+
+    let answers: JsonValue =
+        serde_json::from_str(&fs::read_to_string(&answers_path).unwrap()).unwrap();
+    let replay_answers = answers
+        .get("answers")
+        .and_then(JsonValue::as_object)
+        .expect("replay answers object");
+    let replay_events = answers
+        .get("events")
+        .and_then(JsonValue::as_array)
+        .expect("replay events array");
+    assert_eq!(
+        replay_answers.get("main.menu").and_then(JsonValue::as_str),
+        Some("0"),
+        "replay file should include selected menu action"
+    );
+    assert!(
+        !replay_events.is_empty(),
+        "replay file should include events"
+    );
+
+    let schema: JsonValue =
+        serde_json::from_str(&fs::read_to_string(&schema_path).unwrap()).unwrap();
+    assert_eq!(
+        schema.get("schema_id").and_then(JsonValue::as_str),
+        Some("greentic-flow.wizard.menu.replay")
+    );
+}
+
+#[test]
+fn wizard_can_replay_from_emitted_answers_without_stdin() {
+    let dir = tempdir().unwrap();
+    let answers_path = dir.path().join("wizard.answers.json");
+
+    cargo_bin_cmd!("greentic-flow")
+        .arg("wizard")
+        .arg(dir.path())
+        .arg("--emit-answers")
+        .arg(&answers_path)
+        .write_stdin("0\n")
+        .assert()
+        .success();
+
+    cargo_bin_cmd!("greentic-flow")
+        .arg("wizard")
+        .arg(dir.path())
+        .arg("--answers-file")
+        .arg(&answers_path)
+        .write_stdin("")
+        .assert()
+        .success();
+}
+
+#[test]
 fn new_writes_v2_empty_flow() {
     let dir = tempdir().unwrap();
     let flow_path = dir.path().join("flow.ygtc");

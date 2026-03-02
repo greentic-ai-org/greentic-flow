@@ -2,7 +2,8 @@ use anyhow::{Context, Result, anyhow};
 use clap::{Args, CommandFactory, FromArgMatches, Parser, Subcommand, ValueEnum};
 use include_dir::{Dir, include_dir};
 use std::{
-    collections::{BTreeMap, BTreeSet, HashMap},
+    cell::RefCell,
+    collections::{BTreeMap, BTreeSet, HashMap, VecDeque},
     env,
     ffi::OsStr,
     fs,
@@ -536,9 +537,15 @@ enum Commands {
 struct WizardArgs {
     /// Pack root directory.
     pack: PathBuf,
-    /// Write wizard answers to a JSON file without prompting.
+    /// Load wizard answers from a JSON file for replay/prefill.
     #[arg(long = "answers-file")]
     answers_file: Option<PathBuf>,
+    /// Write wizard answers to a JSON file (without prompt path selection).
+    #[arg(long = "emit-answers")]
+    emit_answers: Option<PathBuf>,
+    /// Write wizard answers JSON Schema to a file.
+    #[arg(long = "emit-schema")]
+    emit_schema: Option<PathBuf>,
     /// Validate and run doctor, but do not persist flow mutations.
     #[arg(long = "dry-run")]
     dry_run: bool,
@@ -547,7 +554,53 @@ struct WizardArgs {
 #[derive(Debug, Clone, Default)]
 struct WizardRunConfig {
     answers_file: Option<PathBuf>,
+    emit_answers: Option<PathBuf>,
+    emit_schema: Option<PathBuf>,
     dry_run: bool,
+}
+
+#[derive(Debug, Clone, Default)]
+struct WizardReplayData {
+    answers: serde_json::Map<String, serde_json::Value>,
+    events: Vec<String>,
+}
+
+#[derive(Debug, Default)]
+struct WizardInteractionState {
+    replay_inputs: VecDeque<String>,
+    recorded_events: Vec<String>,
+}
+
+thread_local! {
+    static WIZARD_INTERACTION_STATE: RefCell<Option<WizardInteractionState>> = const { RefCell::new(None) };
+}
+
+struct WizardInteractionGuard;
+
+impl Drop for WizardInteractionGuard {
+    fn drop(&mut self) {
+        WIZARD_INTERACTION_STATE.with(|cell| {
+            *cell.borrow_mut() = None;
+        });
+    }
+}
+
+fn wizard_begin_interaction(events: Vec<String>) -> WizardInteractionGuard {
+    WIZARD_INTERACTION_STATE.with(|cell| {
+        *cell.borrow_mut() = Some(WizardInteractionState {
+            replay_inputs: VecDeque::from(events),
+            recorded_events: Vec::new(),
+        });
+    });
+    WizardInteractionGuard
+}
+
+fn wizard_recorded_events() -> Option<Vec<String>> {
+    WIZARD_INTERACTION_STATE.with(|cell| {
+        cell.borrow()
+            .as_ref()
+            .map(|state| state.recorded_events.clone())
+    })
 }
 
 #[derive(Args, Debug)]
@@ -894,6 +947,8 @@ fn handle_wizard(args: WizardArgs) -> Result<()> {
         stdout,
         WizardRunConfig {
             answers_file: args.answers_file,
+            emit_answers: args.emit_answers,
+            emit_schema: args.emit_schema,
             dry_run: args.dry_run,
         },
     )
@@ -937,7 +992,7 @@ fn run_wizard_menu_with_config<R: Read, W: Write>(
     config: WizardRunConfig,
 ) -> Result<()> {
     let staged_pack_dir = create_wizard_staging_pack(pack_dir)?;
-    let preloaded_answers = if let Some(path) = config.answers_file.as_ref() {
+    let replay_data = if let Some(path) = config.answers_file.as_ref() {
         let resolved = if path.is_absolute() {
             path.clone()
         } else {
@@ -945,14 +1000,15 @@ fn run_wizard_menu_with_config<R: Read, W: Write>(
         };
         load_wizard_answers_file(&resolved)?
     } else {
-        serde_json::Map::new()
+        WizardReplayData::default()
     };
+    let _interaction_guard = wizard_begin_interaction(replay_data.events.clone());
     let mut session = WizardSession {
         real_pack_dir: pack_dir.to_path_buf(),
         staged_pack_dir,
         dirty: false,
         config,
-        answers_log: preloaded_answers,
+        answers_log: replay_data.answers,
         answers_output_path: None,
     };
     let mut screen = WizardScreen::MainMenu;
@@ -1014,7 +1070,43 @@ fn run_wizard_menu_with_config<R: Read, W: Write>(
                     }
                     "0" => {
                         if session.dirty {
-                            writeln!(writer, "{}", wizard_t("wizard.save.discarded")).ok();
+                            let save_before_exit =
+                                wizard_confirm_yes_no_default_yes(&mut reader, &mut writer)?;
+                            session.answers_log.insert(
+                                "main.exit.save".to_string(),
+                                serde_json::Value::Bool(save_before_exit),
+                            );
+                            if save_before_exit {
+                                if let Err(err) = wizard_save_staged_changes(
+                                    &mut session,
+                                    &mut reader,
+                                    &mut writer,
+                                ) {
+                                    writeln!(writer, "{}", err).ok();
+                                    continue;
+                                }
+                            } else {
+                                writeln!(writer, "{}", wizard_t("wizard.save.discarded")).ok();
+                            }
+                        }
+
+                        if session.config.emit_answers.is_some() && !session.answers_log.is_empty()
+                        {
+                            if let Ok(path) =
+                                wizard_answers_output_path(&mut session, &mut reader, &mut writer)
+                            {
+                                let events = wizard_recorded_events().unwrap_or_default();
+                                let _ =
+                                    write_wizard_answers_file(&path, &session.answers_log, &events);
+                                if let Some(schema_path) =
+                                    wizard_schema_output_path(&session, &path)
+                                {
+                                    let _ = write_wizard_schema_file(
+                                        &schema_path,
+                                        &session.answers_log,
+                                    );
+                                }
+                            }
                         }
                         let _ = fs::remove_dir_all(&session.staged_pack_dir);
                         return Ok(());
@@ -1230,7 +1322,11 @@ fn wizard_save_staged_changes<R: Read, W: Write>(
 
     if !session.answers_log.is_empty() {
         let answers_path = wizard_answers_output_path(session, reader, writer)?;
-        write_wizard_answers_file(&answers_path, &session.answers_log)?;
+        let events = wizard_recorded_events().unwrap_or_default();
+        write_wizard_answers_file(&answers_path, &session.answers_log, &events)?;
+        if let Some(schema_path) = wizard_schema_output_path(session, &answers_path) {
+            write_wizard_schema_file(&schema_path, &session.answers_log)?;
+        }
     }
 
     let flows_target = session.staged_pack_dir.join("flows");
@@ -1332,8 +1428,9 @@ fn wizard_answers_output_path<R: Read, W: Write>(
     }
     let path = session
         .config
-        .answers_file
+        .emit_answers
         .clone()
+        .or_else(|| session.config.answers_file.clone())
         .unwrap_or_else(|| PathBuf::from("./answers.json"));
     let resolved = if path.is_absolute() {
         path
@@ -1342,6 +1439,19 @@ fn wizard_answers_output_path<R: Read, W: Write>(
     };
     session.answers_output_path = Some(resolved.clone());
     Ok(resolved)
+}
+
+fn wizard_schema_output_path(session: &WizardSession, answers_path: &Path) -> Option<PathBuf> {
+    let configured = session.config.emit_schema.clone()?;
+    if configured.is_absolute() {
+        return Some(configured);
+    }
+    if configured.as_os_str() == "auto" {
+        let mut derived = answers_path.to_path_buf();
+        derived.set_extension("answers.schema.json");
+        return Some(derived);
+    }
+    Some(session.real_pack_dir.join(configured))
 }
 
 fn wizard_answers_output_path_interactive<R: Read, W: Write>(
@@ -1394,7 +1504,11 @@ fn wizard_export_answers_with_io<R: Read, W: Write>(
     writer: &mut W,
 ) -> Result<()> {
     let answers_path = wizard_answers_output_path_interactive(session, reader, writer)?;
-    write_wizard_answers_file(&answers_path, &session.answers_log)?;
+    let events = wizard_recorded_events().unwrap_or_default();
+    write_wizard_answers_file(&answers_path, &session.answers_log, &events)?;
+    if let Some(schema_path) = wizard_schema_output_path(session, &answers_path) {
+        write_wizard_schema_file(&schema_path, &session.answers_log)?;
+    }
     writeln!(
         writer,
         "{}",
@@ -1410,26 +1524,118 @@ fn wizard_export_answers_with_io<R: Read, W: Write>(
 fn write_wizard_answers_file(
     path: &Path,
     answers_log: &serde_json::Map<String, serde_json::Value>,
+    events: &[String],
 ) -> Result<()> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)
             .with_context(|| format!("create directory {}", parent.display()))?;
     }
-    let payload = serde_json::Value::Object(answers_log.clone());
+    let payload = serde_json::json!({
+        "schema_id": "greentic-flow.wizard.menu.replay",
+        "schema_version": "1.0.0",
+        "answers": answers_log,
+        "events": events,
+    });
     let text = serde_json::to_string_pretty(&payload).context("serialize wizard answers")?;
     fs::write(path, text).with_context(|| format!("write wizard answers {}", path.display()))?;
     Ok(())
 }
 
-fn load_wizard_answers_file(path: &Path) -> Result<serde_json::Map<String, serde_json::Value>> {
+fn write_wizard_schema_file(
+    path: &Path,
+    answers_log: &serde_json::Map<String, serde_json::Value>,
+) -> Result<()> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("create directory {}", parent.display()))?;
+    }
+    let schema = build_wizard_answers_schema(answers_log);
+    let text = serde_json::to_string_pretty(&schema).context("serialize wizard answers schema")?;
+    fs::write(path, text)
+        .with_context(|| format!("write wizard answers schema {}", path.display()))?;
+    Ok(())
+}
+
+fn build_wizard_answers_schema(
+    answers_log: &serde_json::Map<String, serde_json::Value>,
+) -> serde_json::Value {
+    let mut properties = serde_json::Map::new();
+    for (key, value) in answers_log {
+        properties.insert(key.clone(), json_schema_type_for_value(value));
+    }
+    serde_json::json!({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "wizard_id": "greentic-flow.wizard.menu",
+        "schema_id": "greentic-flow.wizard.menu.replay",
+        "schema_version": "1.0.0",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["answers", "events"],
+        "properties": {
+            "schema_id": { "type": "string" },
+            "schema_version": { "type": "string" },
+            "answers": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": properties,
+            },
+            "events": {
+                "type": "array",
+                "items": { "type": "string" }
+            }
+        }
+    })
+}
+
+fn json_schema_type_for_value(value: &serde_json::Value) -> serde_json::Value {
+    let r#type = match value {
+        serde_json::Value::Null => "null",
+        serde_json::Value::Bool(_) => "boolean",
+        serde_json::Value::Number(n) => {
+            if n.is_i64() || n.is_u64() {
+                "integer"
+            } else {
+                "number"
+            }
+        }
+        serde_json::Value::String(_) => "string",
+        serde_json::Value::Array(_) => "array",
+        serde_json::Value::Object(_) => "object",
+    };
+    serde_json::json!({ "type": r#type })
+}
+
+fn load_wizard_answers_file(path: &Path) -> Result<WizardReplayData> {
     if !path.exists() {
-        return Ok(serde_json::Map::new());
+        return Ok(WizardReplayData::default());
     }
     let text = fs::read_to_string(path)
         .with_context(|| format!("read wizard answers {}", path.display()))?;
     let value: serde_json::Value = serde_json::from_str(&text)
         .with_context(|| format!("parse wizard answers {}", path.display()))?;
-    Ok(value.as_object().cloned().unwrap_or_default())
+    let Some(obj) = value.as_object() else {
+        return Ok(WizardReplayData::default());
+    };
+    if let Some(answers) = obj.get("answers").and_then(serde_json::Value::as_object) {
+        let events = obj
+            .get("events")
+            .and_then(serde_json::Value::as_array)
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(serde_json::Value::as_str)
+                    .map(ToOwned::to_owned)
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        return Ok(WizardReplayData {
+            answers: answers.clone(),
+            events,
+        });
+    }
+    Ok(WizardReplayData {
+        answers: obj.clone(),
+        events: Vec::new(),
+    })
 }
 
 fn sync_staged_pack_back(session: &mut WizardSession) -> Result<()> {
@@ -1570,11 +1776,24 @@ fn wizard_menu_answer<R: Read, W: Write>(
 }
 
 fn read_input_line<R: Read + ?Sized>(reader: &mut R) -> Result<String> {
+    if let Some(replayed) = WIZARD_INTERACTION_STATE.with(|cell| {
+        let mut borrow = cell.borrow_mut();
+        let state = borrow.as_mut()?;
+        let value = state.replay_inputs.pop_front()?;
+        state.recorded_events.push(value.clone());
+        Some(value)
+    }) {
+        return Ok(replayed);
+    }
+
     let mut buf = Vec::new();
     let mut byte = [0u8; 1];
     loop {
         let read = reader.read(&mut byte)?;
         if read == 0 {
+            if buf.is_empty() {
+                anyhow::bail!("wizard input exhausted");
+            }
             break;
         }
         if byte[0] == b'\n' {
@@ -1584,10 +1803,44 @@ fn read_input_line<R: Read + ?Sized>(reader: &mut R) -> Result<String> {
             buf.push(byte[0]);
         }
     }
-    Ok(String::from_utf8(buf)
+    let line = String::from_utf8(buf)
         .map_err(|err| anyhow!("{}: {err}", wizard_t("wizard.error.invalid_utf8_input")))?
         .trim()
-        .to_string())
+        .to_string();
+    WIZARD_INTERACTION_STATE.with(|cell| {
+        if let Some(state) = cell.borrow_mut().as_mut() {
+            state.recorded_events.push(line.clone());
+        }
+    });
+    Ok(line)
+}
+
+fn wizard_confirm_yes_no_default_yes<R: Read, W: Write>(
+    reader: &mut R,
+    writer: &mut W,
+) -> Result<bool> {
+    loop {
+        writeln!(writer, "{}", wizard_t("wizard.save.confirm_exit")).ok();
+        write!(writer, "> ").ok();
+        writer.flush().ok();
+        let line = read_input_line(reader)?;
+        if line.is_empty() {
+            return Ok(true);
+        }
+        let normalized = line.to_ascii_lowercase();
+        match normalized.as_str() {
+            "y" | "yes" => return Ok(true),
+            "n" | "no" => return Ok(false),
+            _ => {
+                writeln!(
+                    writer,
+                    "{}",
+                    wizard_t_with("wizard.error.invalid_choice", &[("choices", "y, n")])
+                )
+                .ok();
+            }
+        }
+    }
 }
 
 fn run_questions_with_qa_lib_io<R: Read, W: Write>(
@@ -4847,6 +5100,7 @@ mod tests {
             "wizard.save.done",
             "wizard.save.dry_run_done",
             "wizard.save.empty_flow",
+            "wizard.save.confirm_exit",
             "wizard.answers.path.prompt",
             "wizard.answers.path.saved",
             "wizard.translate.locales.prompt",
@@ -5083,14 +5337,61 @@ nodes: {}
         .expect("seed flow");
 
         // 2 flow list, 1 select flow, 1 summary edit, change fields, then back to main and exit without save.
-        let input = Cursor::new("2\n1\n1\n2\nDraft Name\nDraft Description\n0\n0\n0\n");
+        let input = Cursor::new("2\n1\n1\n2\nDraft Name\nDraft Description\n0\n0\n0\nn\n");
         let mut output = Vec::new();
         super::run_wizard_menu_with_io(dir.path(), input, &mut output)
             .expect("wizard summary update without save");
+        let rendered = String::from_utf8(output).expect("utf8");
+        assert!(rendered.contains("Save changes before exit? (Y/n)"));
 
         let doc = load_ygtc_from_path(&flow_path).expect("load flow");
         assert_eq!(doc.title.as_deref(), Some("Old Name"));
         assert_eq!(doc.description.as_deref(), Some("Old Description"));
+    }
+
+    #[test]
+    fn wizard_exit_save_prompt_can_persist_changes() {
+        let dir = tempdir().expect("temp dir");
+        let flow_path = dir.path().join("flows/global/messaging/welcome.ygtc");
+        write_two_step_flow(&flow_path);
+        handle_update(
+            UpdateArgs {
+                flow_path: flow_path.clone(),
+                flow_id: None,
+                flow_type: None,
+                schema_version: None,
+                name: Some("Old Name".to_string()),
+                description: Some("Old Description".to_string()),
+                tags: None,
+            },
+            false,
+        )
+        .expect("seed metadata");
+
+        // 2 flow list, 1 select flow, 1 summary edit, change fields, then exit and confirm save.
+        let input = Cursor::new("2\n1\n1\n2\nSaved Name\nSaved Description\n0\n0\n0\ny\n");
+        let mut output = Vec::new();
+        super::run_wizard_menu_with_config(
+            dir.path(),
+            input,
+            &mut output,
+            super::WizardRunConfig {
+                answers_file: Some(PathBuf::from("answers.json")),
+                emit_answers: None,
+                emit_schema: None,
+                dry_run: false,
+            },
+        )
+        .expect("wizard summary update with save-on-exit");
+        let rendered = String::from_utf8(output).expect("utf8");
+        assert!(rendered.contains("Save changes before exit? (Y/n)"));
+
+        let doc = load_ygtc_from_path(&flow_path).expect("load flow");
+        assert_eq!(doc.title.as_deref(), Some("i18n:flow.main.title"));
+        assert_eq!(
+            doc.description.as_deref(),
+            Some("i18n:flow.main.description")
+        );
     }
 
     #[test]
@@ -5147,7 +5448,7 @@ nodes: {}
         with_wizard_resolver_env(fixture_registry_resolver(), || {
             // Add step with fixture oci ref, try save (doctor should fail on sidecar ref validation), then exit.
             // No anchor prompt is shown when the flow has no steps.
-            let input = Cursor::new("2\n1\n3\n2\noci://acme/widget:1\n2\n1\n7\n\n0\n0\n0\n");
+            let input = Cursor::new("2\n1\n3\n2\noci://acme/widget:1\n2\n1\n7\n\n0\n0\n0\nn\n");
             let mut output = Vec::new();
             super::run_wizard_menu_with_io(dir.path(), input, &mut output).expect("wizard run");
             let rendered = String::from_utf8(output).expect("utf8");
@@ -5206,7 +5507,7 @@ nodes: {}
         )
         .expect("seed flow");
 
-        let input = Cursor::new("2\n1\n1\n2\nNew Name\nNew Description\n7\n0\n0\n0\n");
+        let input = Cursor::new("2\n1\n1\n2\nNew Name\nNew Description\n7\n0\n0\n0\nn\n");
         let mut output = Vec::new();
         super::run_wizard_menu_with_config(
             dir.path(),
@@ -5214,6 +5515,8 @@ nodes: {}
             &mut output,
             super::WizardRunConfig {
                 answers_file: Some(PathBuf::from("artifacts/answers-out.json")),
+                emit_answers: None,
+                emit_schema: None,
                 dry_run: false,
             },
         )
@@ -5268,7 +5571,18 @@ nodes: {}
         let answers_text = fs::read_to_string(&answers_path).expect("read answers file");
         let answers_json: serde_json::Value =
             serde_json::from_str(&answers_text).expect("parse answers json");
-        let answers = answers_json.as_object().expect("answers object");
+        let answers = answers_json
+            .get("answers")
+            .and_then(serde_json::Value::as_object)
+            .expect("answers object");
+        let events = answers_json
+            .get("events")
+            .and_then(serde_json::Value::as_array)
+            .expect("events array");
+        assert!(
+            !events.is_empty(),
+            "replay payload should contain interaction events"
+        );
         assert_eq!(
             answers.get("wizard.answers.path").and_then(|v| v.as_str()),
             Some("answers/replay.json")
@@ -5293,6 +5607,8 @@ nodes: {}
             &mut output,
             super::WizardRunConfig {
                 answers_file: Some(answers_rel.clone()),
+                emit_answers: None,
+                emit_schema: None,
                 dry_run: false,
             },
         )
@@ -5335,7 +5651,7 @@ nodes: {}
         .expect("seed flow");
 
         let answers_path = dir.path().join("dry-run-answers.json");
-        let input = Cursor::new("2\n1\n1\n2\nDry Name\nDry Description\n7\n0\n0\n0\n");
+        let input = Cursor::new("2\n1\n1\n2\nDry Name\nDry Description\n7\n0\n0\n0\nn\n");
         let mut output = Vec::new();
         super::run_wizard_menu_with_config(
             dir.path(),
@@ -5343,6 +5659,8 @@ nodes: {}
             &mut output,
             super::WizardRunConfig {
                 answers_file: Some(answers_path.clone()),
+                emit_answers: None,
+                emit_schema: None,
                 dry_run: true,
             },
         )
@@ -5545,7 +5863,7 @@ nodes:
         .expect("write sidecar");
 
         // 2 flow list, 1 select flow, 5 delete-step, first, 7 save (fails), then back/main/exit
-        let input = Cursor::new("2\n1\n5\nfirst\n7\n0\n0\n0\n");
+        let input = Cursor::new("2\n1\n5\nfirst\n7\n0\n0\n0\nn\n");
         let mut output = Vec::new();
         super::run_wizard_menu_with_io(dir.path(), input, &mut output).expect("wizard run");
         let rendered = String::from_utf8(output).expect("utf8");
@@ -5612,7 +5930,7 @@ nodes:
         with_wizard_resolver_env(fixture_registry_resolver(), || {
             // 2 flow list, 1 flow, 3 add step, 2 remote, ref, 2 no-pin, 1 default mode, then back/main/exit.
             // No anchor prompt is shown when the flow has no steps.
-            let input = Cursor::new("2\n1\n3\n2\noci://acme/widget:1\n2\n1\n0\n0\n0\n");
+            let input = Cursor::new("2\n1\n3\n2\noci://acme/widget:1\n2\n1\n0\n0\n0\nn\n");
             let mut output = Vec::new();
             super::run_wizard_menu_with_io(dir.path(), input, &mut output)
                 .expect("wizard menu add step");
