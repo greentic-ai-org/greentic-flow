@@ -507,3 +507,4 @@ pub(crate) fn yaml_error_location(
         FlowErrorLocation::at_path(source_label.to_string()).with_source_path(source_path)
     }
 }
+
