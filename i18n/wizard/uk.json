@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Введіть текст",
   "wizard.qa.prompt.enter_true_false": "Введіть true/false",
   "wizard.qa.prompt.select_option": "Виберіть опцію",
+  "wizard.save.confirm_exit": "Зберегти зміни перед виходом? (Y/n)",
   "wizard.save.discarded": "Незбережені зміни було відкинуто.",
   "wizard.save.doctor_failed": "Збереження заблоковано: doctor завершився з помилкою",
   "wizard.save.done": "Зміни збережено.",

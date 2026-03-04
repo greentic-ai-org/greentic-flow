@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "ਟੈਕਸਟ ਦਰਜ ਕਰੋ",
   "wizard.qa.prompt.enter_true_false": "true/false ਦਰਜ ਕਰੋ",
   "wizard.qa.prompt.select_option": "ਵਿਕਲਪ ਚੁਣੋ",
+  "wizard.save.confirm_exit": "ਬਾਹਰ ਨਿਕਲਣ ਤੋਂ ਪਹਿਲਾਂ ਤਬਦੀਲੀਆਂ ਸੰਭਾਲਣੀਆਂ ਹਨ? (Y/n)",
   "wizard.save.discarded": "ਨਾ-ਸੰਭਾਲੀਆਂ ਤਬਦੀਲੀਆਂ ਰੱਦ ਕਰ ਦਿੱਤੀਆਂ ਗਈਆਂ।",
   "wizard.save.doctor_failed": "ਸੰਭਾਲਣਾ ਰੋਕਿਆ ਗਿਆ: doctor ਅਸਫਲ ਹੋਇਆ",
   "wizard.save.done": "ਤਬਦੀਲੀਆਂ ਸੰਭਾਲੀਆਂ ਗਈਆਂ।",

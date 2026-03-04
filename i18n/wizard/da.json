@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Indtast tekst",
   "wizard.qa.prompt.enter_true_false": "Indtast true/false",
   "wizard.qa.prompt.select_option": "Vælg mulighed",
+  "wizard.save.confirm_exit": "Gem ændringer før afslutning? (Y/n)",
   "wizard.save.discarded": "Ikke-gemte ændringer blev kasseret.",
   "wizard.save.doctor_failed": "Gemning blokeret: doctor mislykkedes",
   "wizard.save.done": "Ændringer gemt.",

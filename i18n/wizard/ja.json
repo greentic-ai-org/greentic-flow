@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "テキストを入力",
   "wizard.qa.prompt.enter_true_false": "true/falseを入力",
   "wizard.qa.prompt.select_option": "オプションを選択",
+  "wizard.save.confirm_exit": "終了前に変更を保存しますか？ (Y/n)",
   "wizard.save.discarded": "未保存の変更は破棄されました。",
   "wizard.save.doctor_failed": "保存がブロックされました: doctor が失敗しました",
   "wizard.save.done": "変更を保存しました。",

@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Introduceți textul",
   "wizard.qa.prompt.enter_true_false": "Introduceți true/false",
   "wizard.qa.prompt.select_option": "Selectați opțiunea",
+  "wizard.save.confirm_exit": "Salvați modificările înainte de ieșire? (Y/n)",
   "wizard.save.discarded": "Modificările nesalvate au fost eliminate.",
   "wizard.save.doctor_failed": "Salvarea a fost blocată: doctor a eșuat",
   "wizard.save.done": "Modificările au fost salvate.",

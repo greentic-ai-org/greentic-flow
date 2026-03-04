@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "உரையை உள்ளிடவும்",
   "wizard.qa.prompt.enter_true_false": "true/false ஐ உள்ளிடவும்",
   "wizard.qa.prompt.select_option": "விருப்பத்தைத் தேர்ந்தெடுக்கவும்",
+  "wizard.save.confirm_exit": "வெளியேறுவதற்கு முன் மாற்றங்களைச் சேமிக்கவா? (Y/n)",
   "wizard.save.discarded": "சேமிக்காத மாற்றங்கள் நிராகரிக்கப்பட்டன.",
   "wizard.save.doctor_failed": "சேமிப்பு தடுக்கப்பட்டது: doctor தோல்வியடைந்தது",
   "wizard.save.done": "மாற்றங்கள் சேமிக்கப்பட்டன.",

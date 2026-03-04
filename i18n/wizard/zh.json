@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "输入文本",
   "wizard.qa.prompt.enter_true_false": "输入 true/false",
   "wizard.qa.prompt.select_option": "选择选项",
+  "wizard.save.confirm_exit": "退出前保存更改吗？(Y/n)",
   "wizard.save.discarded": "未保存的更改已丢弃。",
   "wizard.save.doctor_failed": "保存被阻止：doctor 失败",
   "wizard.save.done": "更改已保存。",

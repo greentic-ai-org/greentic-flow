@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "បញ្ចូលអត្ថបទ",
   "wizard.qa.prompt.enter_true_false": "បញ្ចូល true/false",
   "wizard.qa.prompt.select_option": "ជ្រើសរើសជម្រើស",
+  "wizard.save.confirm_exit": "រក្សាទុកការផ្លាស់ប្តូរមុនចាកចេញឬ? (Y/n)",
   "wizard.save.discarded": "ការផ្លាស់ប្តូរដែលមិនទាន់រក្សាទុកត្រូវបានបោះបង់។",
   "wizard.save.doctor_failed": "រក្សាទុកត្រូវបានរារាំង៖ doctor បរាជ័យ",
   "wizard.save.done": "បានរក្សាទុកការផ្លាស់ប្តូរ។",

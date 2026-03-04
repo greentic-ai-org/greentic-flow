@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Въведете текст",
   "wizard.qa.prompt.enter_true_false": "Въведете true/false",
   "wizard.qa.prompt.select_option": "Изберете опция",
+  "wizard.save.confirm_exit": "Да се запазят ли промените преди изход? (Y/n)",
   "wizard.save.discarded": "Незаписаните промени бяха отхвърлени.",
   "wizard.save.doctor_failed": "Записът е блокиран: doctor неуспешен",
   "wizard.save.done": "Промените са записани.",

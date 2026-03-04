@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "أدخل نصًا",
   "wizard.qa.prompt.enter_true_false": "أدخل true/false",
   "wizard.qa.prompt.select_option": "اختر خيارًا",
+  "wizard.save.confirm_exit": "حفظ التغييرات قبل الخروج؟ (Y/n)",
   "wizard.save.discarded": "تم تجاهل التغييرات غير المحفوظة.",
   "wizard.save.doctor_failed": "تم حظر الحفظ: فشل الفاحص",
   "wizard.save.done": "تم حفظ التغييرات.",

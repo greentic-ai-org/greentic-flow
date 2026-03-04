@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Ange text",
   "wizard.qa.prompt.enter_true_false": "Ange true/false",
   "wizard.qa.prompt.select_option": "Välj alternativ",
+  "wizard.save.confirm_exit": "Spara ändringar innan du avslutar? (J/n)",
   "wizard.save.discarded": "Osparade ändringar kasserades.",
   "wizard.save.doctor_failed": "Sparning blockerad: doctor misslyckades",
   "wizard.save.done": "Ändringar sparades.",

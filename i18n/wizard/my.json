@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "စာသား ထည့်ပါ",
   "wizard.qa.prompt.enter_true_false": "true/false ထည့်ပါ",
   "wizard.qa.prompt.select_option": "ရွေးချယ်စရာကို ရွေးပါ",
+  "wizard.save.confirm_exit": "မထွက်ခင် ပြောင်းလဲမှုများကို သိမ်းမလား? (Y/n)",
   "wizard.save.discarded": "မသိမ်းဆည်းရသေးသော ပြောင်းလဲမှုများကို ပယ်ဖျက်ခဲ့သည်။",
   "wizard.save.doctor_failed": "သိမ်းဆည်းမှုကို တားဆီးထားသည်: doctor မအောင်မြင်ပါ",
   "wizard.save.done": "ပြောင်းလဲမှုများကို သိမ်းဆည်းပြီးပါပြီ။",

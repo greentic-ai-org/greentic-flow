@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "පෙළ ඇතුළත් කරන්න",
   "wizard.qa.prompt.enter_true_false": "true/false ඇතුළත් කරන්න",
   "wizard.qa.prompt.select_option": "විකල්පය තෝරන්න",
+  "wizard.save.confirm_exit": "පිටවීමට පෙර වෙනස්කම් සුරකින්නද? (Y/n)",
   "wizard.save.discarded": "නොසුරකින ලද වෙනස්කම් ඉවත දමන ලදී.",
   "wizard.save.doctor_failed": "සුරැකීම අවහිර විය: doctor අසමත් විය",
   "wizard.save.done": "වෙනස්කම් සුරකින ලදී.",

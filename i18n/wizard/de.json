@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Text eingeben",
   "wizard.qa.prompt.enter_true_false": "true/false eingeben",
   "wizard.qa.prompt.select_option": "Option auswählen",
+  "wizard.save.confirm_exit": "Änderungen vor dem Beenden speichern? (J/n)",
   "wizard.save.discarded": "Nicht gespeicherte Änderungen wurden verworfen.",
   "wizard.save.doctor_failed": "Speichern blockiert: doctor fehlgeschlagen",
   "wizard.save.done": "Änderungen gespeichert.",

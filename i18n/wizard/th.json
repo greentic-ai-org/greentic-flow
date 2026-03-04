@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "ป้อนข้อความ",
   "wizard.qa.prompt.enter_true_false": "ป้อน true/false",
   "wizard.qa.prompt.select_option": "เลือกตัวเลือก",
+  "wizard.save.confirm_exit": "บันทึกการเปลี่ยนแปลงก่อนออกหรือไม่? (Y/n)",
   "wizard.save.discarded": "การเปลี่ยนแปลงที่ยังไม่ได้บันทึกถูกยกเลิกแล้ว",
   "wizard.save.doctor_failed": "บันทึกถูกบล็อก: doctor ล้มเหลว",
   "wizard.save.done": "บันทึกการเปลี่ยนแปลงแล้ว",

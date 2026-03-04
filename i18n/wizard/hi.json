@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "पाठ दर्ज करें",
   "wizard.qa.prompt.enter_true_false": "true/false दर्ज करें",
   "wizard.qa.prompt.select_option": "विकल्प चुनें",
+  "wizard.save.confirm_exit": "बाहर निकलने से पहले बदलाव सहेजें? (Y/n)",
   "wizard.save.discarded": "बिना सहेजे बदलाव त्याग दिए गए।",
   "wizard.save.doctor_failed": "सेव अवरुद्ध: doctor विफल हुआ",
   "wizard.save.done": "बदलाव सहेजे गए।",

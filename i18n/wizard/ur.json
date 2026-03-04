@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "متن درج کریں",
   "wizard.qa.prompt.enter_true_false": "true/false درج کریں",
   "wizard.qa.prompt.select_option": "آپشن منتخب کریں",
+  "wizard.save.confirm_exit": "بند کرنے سے پہلے تبدیلیاں محفوظ کریں؟ (Y/n)",
   "wizard.save.discarded": "غیر محفوظ تبدیلیاں رد کر دی گئیں۔",
   "wizard.save.doctor_failed": "محفوظ کرنا روکا گیا: doctor ناکام ہوا",
   "wizard.save.done": "تبدیلیاں محفوظ ہو گئیں۔",

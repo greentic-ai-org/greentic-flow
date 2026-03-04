@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Skriv inn tekst",
   "wizard.qa.prompt.enter_true_false": "Skriv inn sann/usann",
   "wizard.qa.prompt.select_option": "Velg alternativ",
+  "wizard.save.confirm_exit": "Lagre endringer før avslutning? (J/n)",
   "wizard.save.discarded": "Ulagrede endringer ble forkastet.",
   "wizard.save.doctor_failed": "Lagring blokkert: doctor feilet",
   "wizard.save.done": "Endringer lagret.",

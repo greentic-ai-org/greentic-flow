@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Sisesta tekst",
   "wizard.qa.prompt.enter_true_false": "Sisesta true/false",
   "wizard.qa.prompt.select_option": "Vali valik",
+  "wizard.save.confirm_exit": "Salvestada muudatused enne väljumist? (J/e)",
   "wizard.save.discarded": "Salvestamata muudatused jäeti kõrvale.",
   "wizard.save.doctor_failed": "Salvestamine blokeeritud: doctor ebaõnnestus",
   "wizard.save.done": "Muudatused salvestati.",

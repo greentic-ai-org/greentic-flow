@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Wprowadź tekst",
   "wizard.qa.prompt.enter_true_false": "Wprowadź true/false",
   "wizard.qa.prompt.select_option": "Wybierz opcję",
+  "wizard.save.confirm_exit": "Zapisać zmiany przed wyjściem? (T/n)",
   "wizard.save.discarded": "Niezapisane zmiany zostały odrzucone.",
   "wizard.save.doctor_failed": "Zapis zablokowany: doctor zakończył się błędem",
   "wizard.save.done": "Zmiany zapisane.",

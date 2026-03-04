@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Voer tekst in",
   "wizard.qa.prompt.enter_true_false": "Voer true/false in",
   "wizard.qa.prompt.select_option": "Selecteer optie",
+  "wizard.save.confirm_exit": "Wijzigingen opslaan voordat je afsluit? (Y/n)",
   "wizard.save.discarded": "Niet-opgeslagen wijzigingen zijn verworpen.",
   "wizard.save.doctor_failed": "Opslaan geblokkeerd: doctor is mislukt",
   "wizard.save.done": "Wijzigingen opgeslagen.",

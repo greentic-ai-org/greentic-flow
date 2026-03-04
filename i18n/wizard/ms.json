@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Masukkan teks",
   "wizard.qa.prompt.enter_true_false": "Masukkan true/false",
   "wizard.qa.prompt.select_option": "Pilih pilihan",
+  "wizard.save.confirm_exit": "Simpan perubahan sebelum keluar? (Y/n)",
   "wizard.save.discarded": "Perubahan yang belum disimpan telah dibuang.",
   "wizard.save.doctor_failed": "Simpanan disekat: doctor gagal",
   "wizard.save.done": "Perubahan disimpan.",

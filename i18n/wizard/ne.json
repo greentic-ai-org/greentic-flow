@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "पाठ प्रविष्ट गर्नुहोस्",
   "wizard.qa.prompt.enter_true_false": "true/false प्रविष्ट गर्नुहोस्",
   "wizard.qa.prompt.select_option": "विकल्प चयन गर्नुहोस्",
+  "wizard.save.confirm_exit": "बाहिर निस्कनुअघि परिवर्तनहरू सुरक्षित गर्नुहुन्छ? (Y/n)",
   "wizard.save.discarded": "असुरक्षित परिवर्तनहरू खारेज गरियो।",
   "wizard.save.doctor_failed": "सुरक्षित गर्न रोकियो: डाक्टर असफल भयो",
   "wizard.save.done": "परिवर्तनहरू सुरक्षित गरियो।",

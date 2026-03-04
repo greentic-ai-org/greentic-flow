@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Zadejte text",
   "wizard.qa.prompt.enter_true_false": "Zadejte true/false",
   "wizard.qa.prompt.select_option": "Vyberte možnost",
+  "wizard.save.confirm_exit": "Uložit změny před ukončením? (A/n)",
   "wizard.save.discarded": "Neuložené změny byly zahozeny.",
   "wizard.save.doctor_failed": "Uložení zablokováno: doctor selhal",
   "wizard.save.done": "Změny uloženy.",

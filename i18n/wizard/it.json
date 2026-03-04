@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Inserisci testo",
   "wizard.qa.prompt.enter_true_false": "Inserisci true/false",
   "wizard.qa.prompt.select_option": "Seleziona un'opzione",
+  "wizard.save.confirm_exit": "Salvare le modifiche prima di uscire? (S/n)",
   "wizard.save.discarded": "Le modifiche non salvate sono state scartate.",
   "wizard.save.doctor_failed": "Salvataggio bloccato: doctor non riuscito",
   "wizard.save.done": "Modifiche salvate.",

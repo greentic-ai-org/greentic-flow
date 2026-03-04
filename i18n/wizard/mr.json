@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "मजकूर प्रविष्ट करा",
   "wizard.qa.prompt.enter_true_false": "true/false प्रविष्ट करा",
   "wizard.qa.prompt.select_option": "पर्याय निवडा",
+  "wizard.save.confirm_exit": "बाहेर पडण्यापूर्वी बदल जतन करायचे का? (Y/n)",
   "wizard.save.discarded": "न जतन केलेले बदल रद्द केले गेले.",
   "wizard.save.doctor_failed": "जतन थांबवले: डॉक्टर अयशस्वी झाला",
   "wizard.save.done": "बदल जतन केले.",

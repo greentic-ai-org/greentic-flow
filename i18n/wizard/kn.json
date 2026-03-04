@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "ಪಠ್ಯವನ್ನು ನಮೂದಿಸಿ",
   "wizard.qa.prompt.enter_true_false": "true/false ನಮೂದಿಸಿ",
   "wizard.qa.prompt.select_option": "ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ",
+  "wizard.save.confirm_exit": "ನಿರ್ಗಮನಕ್ಕಿಂತ ಮೊದಲು ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಬೇಕೇ? (Y/n)",
   "wizard.save.discarded": "ಉಳಿಸದ ಬದಲಾವಣೆಗಳನ್ನು ತಿರಸ್ಕರಿಸಲಾಗಿದೆ.",
   "wizard.save.doctor_failed": "ಉಳಿಸುವಿಕೆ ತಡೆಗಟ್ಟಲಾಗಿದೆ: doctor ವಿಫಲವಾಗಿದೆ",
   "wizard.save.done": "ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಲಾಗಿದೆ.",

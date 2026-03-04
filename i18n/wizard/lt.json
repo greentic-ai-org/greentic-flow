@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Įveskite tekstą",
   "wizard.qa.prompt.enter_true_false": "Įveskite true/false",
   "wizard.qa.prompt.select_option": "Pasirinkite parinktį",
+  "wizard.save.confirm_exit": "Išsaugoti pakeitimus prieš išeinant? (Y/n)",
   "wizard.save.discarded": "Neišsaugoti pakeitimai buvo atmesti.",
   "wizard.save.doctor_failed": "Išsaugojimas užblokuotas: doctor nepavyko",
   "wizard.save.done": "Pakeitimai išsaugoti.",

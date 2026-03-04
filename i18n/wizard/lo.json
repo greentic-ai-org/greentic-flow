@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "ປ້ອນຂໍ້ຄວາມ",
   "wizard.qa.prompt.enter_true_false": "ປ້ອນ true/false",
   "wizard.qa.prompt.select_option": "ເລືອກຕົວເລືອກ",
+  "wizard.save.confirm_exit": "ບັນທຶກການປ່ຽນແປງກ່ອນອອກບໍ? (Y/n)",
   "wizard.save.discarded": "ການປ່ຽນແປງທີ່ຍັງບໍ່ບັນທຶກຖືກຍົກເລີກແລ້ວ.",
   "wizard.save.doctor_failed": "ບັນທຶກຖືກບລັອກ: doctor ລົ້ມເຫຼວ",
   "wizard.save.done": "ບັນທຶກການປ່ຽນແປງແລ້ວ.",

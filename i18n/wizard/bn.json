@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "টেক্সট লিখুন",
   "wizard.qa.prompt.enter_true_false": "true/false লিখুন",
   "wizard.qa.prompt.select_option": "বিকল্প নির্বাচন করুন",
+  "wizard.save.confirm_exit": "বের হওয়ার আগে পরিবর্তনগুলি সংরক্ষণ করবেন? (Y/n)",
   "wizard.save.discarded": "অসংরক্ষিত পরিবর্তন বাতিল করা হয়েছে।",
   "wizard.save.doctor_failed": "সংরক্ষণ বাধাগ্রস্ত: ডক্টর ব্যর্থ হয়েছে",
   "wizard.save.done": "পরিবর্তন সংরক্ষিত হয়েছে।",

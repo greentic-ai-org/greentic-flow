@@ -1,11 +1,11 @@
 use anyhow::{Context, Result, anyhow};
-use clap::{Args, CommandFactory, FromArgMatches, Parser, Subcommand, ValueEnum};
+use clap::{Arg, ArgAction, Args, CommandFactory, FromArgMatches, Parser, Subcommand, ValueEnum};
 use include_dir::{Dir, include_dir};
 use std::{
     cell::RefCell,
     collections::{BTreeMap, BTreeSet, HashMap, VecDeque},
     env,
-    ffi::OsStr,
+    ffi::{OsStr, OsString},
     fs,
     io::{self, Read, Write},
     path::{Path, PathBuf},
@@ -335,6 +335,37 @@ fn cli_requested_locale() -> Option<String> {
     None
 }
 
+fn normalize_wizard_args(args: &mut Vec<OsString>) {
+    let Some(wizard_idx) = args
+        .iter()
+        .position(|arg| arg.as_os_str() == OsStr::new("wizard"))
+    else {
+        return;
+    };
+    let dash_idx = wizard_idx + 1;
+    if dash_idx >= args.len() || args[dash_idx].as_os_str() != OsStr::new("--") {
+        return;
+    }
+    let Some(next) = args.get(dash_idx + 1).map(|s| s.as_os_str()) else {
+        return;
+    };
+    if matches!(next, s if s == OsStr::new("-h") || s == OsStr::new("--help")) {
+        let _ = args.remove(dash_idx);
+        return;
+    }
+    let next_text = next.to_string_lossy();
+    let next_looks_like_option = next_text.starts_with('-');
+    if !next_looks_like_option {
+        let _ = args.remove(dash_idx);
+    }
+}
+
+fn normalized_cli_args() -> Vec<OsString> {
+    let mut args: Vec<OsString> = env::args_os().collect();
+    normalize_wizard_args(&mut args);
+    args
+}
+
 fn localized_cli_command(catalog: &I18nCatalog, locale: &str) -> clap::Command {
     localize_help_tree(Cli::command(), catalog, locale, &[])
 }
@@ -366,6 +397,15 @@ fn localize_help_tree(
     path: &[String],
 ) -> clap::Command {
     let path_key = help_path_key(path);
+    let help_key = format!("cli.help.arg.{path_key}.help.help");
+    let localized_help = resolve_cli_text(catalog, locale, &help_key, "Print help");
+    cmd = cmd.disable_help_flag(true).arg(
+        Arg::new("help")
+            .short('h')
+            .long("help")
+            .action(ArgAction::Help)
+            .help(localized_help),
+    );
     if let Some(about) = cmd.get_about().map(|v| v.to_string())
         && !about.trim().is_empty()
     {
@@ -401,7 +441,6 @@ fn localize_help_tree(
             arg
         });
     }
-
     let sub_names: Vec<String> = cmd
         .get_subcommands()
         .map(|sc| sc.get_name().to_string())
@@ -451,6 +490,10 @@ fn collect_help_i18n_entries(
             );
         }
     }
+    out.insert(
+        format!("cli.help.arg.{path_key}.help.help"),
+        "Print help".to_string(),
+    );
     for sc in cmd.get_subcommands() {
         let mut sub_path = path.to_vec();
         sub_path.push(sc.get_name().to_string());
@@ -906,7 +949,8 @@ fn main() -> Result<()> {
     let requested_locale = cli_requested_locale();
     let (catalog, locale) = default_i18n_catalog(requested_locale.as_deref());
     let cmd = localized_cli_command(&catalog, &locale);
-    let matches = match cmd.try_get_matches() {
+    let argv = normalized_cli_args();
+    let matches = match cmd.try_get_matches_from(argv) {
         Ok(matches) => matches,
         Err(err) => err.exit(),
     };
@@ -1090,22 +1134,16 @@ fn run_wizard_menu_with_config<R: Read, W: Write>(
                             }
                         }
 
-                        if session.config.emit_answers.is_some() && !session.answers_log.is_empty()
-                        {
-                            if let Ok(path) =
+                        if session.config.emit_answers.is_some()
+                            && !session.answers_log.is_empty()
+                            && let Ok(path) =
                                 wizard_answers_output_path(&mut session, &mut reader, &mut writer)
-                            {
-                                let events = wizard_recorded_events().unwrap_or_default();
+                        {
+                            let events = wizard_recorded_events().unwrap_or_default();
+                            let _ = write_wizard_answers_file(&path, &session.answers_log, &events);
+                            if let Some(schema_path) = wizard_schema_output_path(&session, &path) {
                                 let _ =
-                                    write_wizard_answers_file(&path, &session.answers_log, &events);
-                                if let Some(schema_path) =
-                                    wizard_schema_output_path(&session, &path)
-                                {
-                                    let _ = write_wizard_schema_file(
-                                        &schema_path,
-                                        &session.answers_log,
-                                    );
-                                }
+                                    write_wizard_schema_file(&schema_path, &session.answers_log);
                             }
                         }
                         let _ = fs::remove_dir_all(&session.staged_pack_dir);
@@ -1787,6 +1825,7 @@ fn read_input_line<R: Read + ?Sized>(reader: &mut R) -> Result<String> {
     }
 
     let mut buf = Vec::new();
+    let mut cursor = 0usize;
     let mut byte = [0u8; 1];
     loop {
         let read = reader.read(&mut byte)?;
@@ -1796,11 +1835,138 @@ fn read_input_line<R: Read + ?Sized>(reader: &mut R) -> Result<String> {
             }
             break;
         }
-        if byte[0] == b'\n' {
-            break;
-        }
-        if byte[0] != b'\r' {
-            buf.push(byte[0]);
+        match byte[0] {
+            b'\n' => break,
+            b'\r' => {}
+            // Backspace/Delete (backward)
+            0x08 | 0x7f => {
+                if cursor > 0 {
+                    cursor -= 1;
+                    buf.remove(cursor);
+                }
+            }
+            // Ctrl-D (forward delete in many terminals/shells)
+            0x04 => {
+                if cursor < buf.len() {
+                    buf.remove(cursor);
+                }
+            }
+            // ANSI escape sequences (arrow keys/home/end/delete)
+            0x1b => {
+                let mut seq = [0u8; 1];
+                if reader.read(&mut seq)? == 0 {
+                    continue;
+                }
+                if seq[0] != b'[' {
+                    continue;
+                }
+                if reader.read(&mut seq)? == 0 {
+                    continue;
+                }
+                match seq[0] {
+                    b'C' => {
+                        if cursor < buf.len() {
+                            cursor += 1;
+                        }
+                    }
+                    b'D' => {
+                        cursor = cursor.saturating_sub(1);
+                    }
+                    b'H' => cursor = 0,
+                    b'F' => cursor = buf.len(),
+                    b'3' => {
+                        // Delete key: ESC [ 3 ~
+                        let _ = reader.read(&mut seq)?;
+                        if cursor < buf.len() {
+                            buf.remove(cursor);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            // Some terminals/IDE consoles pass arrows as literal caret notation, e.g. "^[[D".
+            b'^' => {
+                let mut consumed = Vec::new();
+                let mut seq = [0u8; 1];
+                if reader.read(&mut seq)? == 0 {
+                    buf.insert(cursor, b'^');
+                    cursor += 1;
+                    continue;
+                }
+                consumed.push(seq[0]);
+                if seq[0] == b'[' {
+                    if reader.read(&mut seq)? == 0 {
+                        buf.insert(cursor, b'^');
+                        cursor += 1;
+                        for b in consumed {
+                            if b >= 0x20 {
+                                buf.insert(cursor, b);
+                                cursor += 1;
+                            }
+                        }
+                        continue;
+                    }
+                    consumed.push(seq[0]);
+                    if seq[0] == b'[' {
+                        if reader.read(&mut seq)? == 0 {
+                            buf.insert(cursor, b'^');
+                            cursor += 1;
+                            for b in consumed {
+                                if b >= 0x20 {
+                                    buf.insert(cursor, b);
+                                    cursor += 1;
+                                }
+                            }
+                            continue;
+                        }
+                        consumed.push(seq[0]);
+                        match seq[0] {
+                            b'C' => {
+                                if cursor < buf.len() {
+                                    cursor += 1;
+                                }
+                                continue;
+                            }
+                            b'D' => {
+                                cursor = cursor.saturating_sub(1);
+                                continue;
+                            }
+                            b'H' => {
+                                cursor = 0;
+                                continue;
+                            }
+                            b'F' => {
+                                cursor = buf.len();
+                                continue;
+                            }
+                            b'3' => {
+                                if reader.read(&mut seq)? > 0 && seq[0] == b'~' {
+                                    if cursor < buf.len() {
+                                        buf.remove(cursor);
+                                    }
+                                    continue;
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                // Not a recognized caret-encoded control sequence: keep literal bytes.
+                buf.insert(cursor, b'^');
+                cursor += 1;
+                for b in consumed {
+                    if b >= 0x20 {
+                        buf.insert(cursor, b);
+                        cursor += 1;
+                    }
+                }
+            }
+            ch => {
+                if ch >= 0x20 {
+                    buf.insert(cursor, ch);
+                    cursor += 1;
+                }
+            }
         }
     }
     let line = String::from_utf8(buf)
@@ -4865,6 +5031,7 @@ mod tests {
     use serde_json::Value;
     use serde_json::json;
     use std::env;
+    use std::ffi::OsString;
     use std::fs;
     use std::io::Cursor;
     use std::path::{Path, PathBuf};
@@ -5243,7 +5410,8 @@ mod tests {
         .expect("seed metadata");
 
         // 2 flow list, 1 select flow, 1 summary, provide new name/desc, 7 save, then back/back/exit
-        let input = Cursor::new("2\n1\n1\n2\nNew Name\nNew Description\n7\n\n0\n0\n0\n");
+        let input =
+            Cursor::new("2\n1\n1\n2\nNew Name\nNew Description\n7\nanswers.json\n0\n0\n0\nn\n");
         let mut output = Vec::new();
         super::run_wizard_menu_with_io(dir.path(), input, &mut output)
             .expect("wizard summary update");
@@ -5479,9 +5647,20 @@ nodes: {}
         )
         .expect("seed flow");
 
-        let input = Cursor::new("2\n1\n1\n2\nNew Name\nNew Description\n7\n\n0\n0\n0\n");
+        let input = Cursor::new("2\n1\n1\n2\nNew Name\nNew Description\n7\n0\n0\n0\nn\n");
         let mut output = Vec::new();
-        super::run_wizard_menu_with_io(dir.path(), input, &mut output).expect("wizard save");
+        super::run_wizard_menu_with_config(
+            dir.path(),
+            input,
+            &mut output,
+            super::WizardRunConfig {
+                answers_file: Some(PathBuf::from("answers.json")),
+                emit_answers: None,
+                emit_schema: None,
+                dry_run: false,
+            },
+        )
+        .expect("wizard save");
         let answers_path = dir.path().join("answers.json");
         assert!(
             answers_path.exists(),
@@ -5630,6 +5809,29 @@ nodes: {}
             flow_ir.nodes.contains_key("first") && flow_ir.nodes.contains_key("second"),
             "flow should preserve existing steps"
         );
+    }
+
+    #[test]
+    fn wizard_answers_file_roundtrip_preserves_answers_and_events() {
+        let dir = tempdir().expect("temp dir");
+        let path = dir.path().join("answers/replay.json");
+        let mut answers = serde_json::Map::new();
+        answers.insert("summary.name".to_string(), json!("Replay Name"));
+        answers.insert("summary.description".to_string(), json!("Replay Desc"));
+        let events = vec!["2".to_string(), "1".to_string(), "7".to_string()];
+
+        super::write_wizard_answers_file(&path, &answers, &events).expect("write answers file");
+        let loaded = super::load_wizard_answers_file(&path).expect("load answers file");
+
+        assert_eq!(
+            loaded.answers.get("summary.name"),
+            Some(&json!("Replay Name"))
+        );
+        assert_eq!(
+            loaded.answers.get("summary.description"),
+            Some(&json!("Replay Desc"))
+        );
+        assert_eq!(loaded.events, events);
     }
 
     #[test]
@@ -6328,6 +6530,99 @@ nodes:
             WizardModeArg::UpgradeDeprecated.to_mode(),
             WizardMode::Update
         );
+    }
+
+    #[test]
+    fn normalize_wizard_args_strips_double_dash_before_pack() {
+        let mut args = vec![
+            OsString::from("greentic-flow"),
+            OsString::from("wizard"),
+            OsString::from("--"),
+            OsString::from("/tmp/test-pack"),
+            OsString::from("--help"),
+        ];
+        super::normalize_wizard_args(&mut args);
+        let rendered: Vec<String> = args
+            .iter()
+            .map(|s| s.to_string_lossy().into_owned())
+            .collect();
+        assert_eq!(
+            rendered,
+            vec![
+                "greentic-flow".to_string(),
+                "wizard".to_string(),
+                "/tmp/test-pack".to_string(),
+                "--help".to_string()
+            ]
+        );
+    }
+
+    #[test]
+    fn normalize_wizard_args_keeps_double_dash_before_option_like_pack() {
+        let mut args = vec![
+            OsString::from("greentic-flow"),
+            OsString::from("wizard"),
+            OsString::from("--"),
+            OsString::from("--pack-starts-with-dash"),
+        ];
+        super::normalize_wizard_args(&mut args);
+        let rendered: Vec<String> = args
+            .iter()
+            .map(|s| s.to_string_lossy().into_owned())
+            .collect();
+        assert_eq!(
+            rendered,
+            vec![
+                "greentic-flow".to_string(),
+                "wizard".to_string(),
+                "--".to_string(),
+                "--pack-starts-with-dash".to_string()
+            ]
+        );
+    }
+
+    #[test]
+    fn normalize_wizard_args_strips_double_dash_before_help_flag() {
+        let mut args = vec![
+            OsString::from("greentic-flow"),
+            OsString::from("wizard"),
+            OsString::from("--"),
+            OsString::from("--help"),
+        ];
+        super::normalize_wizard_args(&mut args);
+        let rendered: Vec<String> = args
+            .iter()
+            .map(|s| s.to_string_lossy().into_owned())
+            .collect();
+        assert_eq!(
+            rendered,
+            vec![
+                "greentic-flow".to_string(),
+                "wizard".to_string(),
+                "--help".to_string()
+            ]
+        );
+    }
+
+    #[test]
+    fn read_input_line_supports_left_arrow_editing() {
+        let mut input = Cursor::new(b"oci://abc\x1b[D\x1b[DXY\n".to_vec());
+        let line = super::read_input_line(&mut input).expect("read edited line");
+        assert_eq!(line, "oci://aXYbc");
+    }
+
+    #[test]
+    fn read_input_line_ctrl_d_deletes_forward_char() {
+        let mut input = Cursor::new(b"abc\x1b[D\x1b[D\x04\n".to_vec());
+        let line = super::read_input_line(&mut input).expect("read edited line");
+        assert_eq!(line, "ac");
+    }
+
+    #[test]
+    fn read_input_line_supports_caret_encoded_left_arrow() {
+        let mut input = Cursor::new(b"abcd^[[D^[[DXY\n".to_vec());
+        let line = super::read_input_line(&mut input).expect("read edited line");
+        assert_eq!(line, "abXYcd");
     }
 
     #[test]

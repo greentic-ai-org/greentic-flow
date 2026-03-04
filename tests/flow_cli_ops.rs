@@ -42,6 +42,41 @@ fn wizard_help_renders_with_pack_entrypoint() {
 }
 
 #[test]
+fn wizard_help_accepts_double_dash_before_pack() {
+    let dir = tempdir().unwrap();
+    cargo_bin_cmd!("greentic-flow")
+        .arg("wizard")
+        .arg("--")
+        .arg(dir.path())
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(contains("<PACK>"));
+}
+
+#[test]
+fn wizard_double_dash_pack_allows_flags_after_pack() {
+    let dir = tempdir().unwrap();
+    let answers_path = dir.path().join("answers.json");
+    cargo_bin_cmd!("greentic-flow")
+        .arg("wizard")
+        .arg("--")
+        .arg(dir.path())
+        .arg("--dry-run")
+        .arg("--emit-answers")
+        .arg(&answers_path)
+        .arg("--locale")
+        .arg("nl")
+        .write_stdin("0\n")
+        .assert()
+        .success();
+    assert!(
+        answers_path.exists(),
+        "wizard should honor --emit-answers when using `wizard -- <pack> ...`"
+    );
+}
+
+#[test]
 fn wizard_menu_allows_exit_from_main_menu() {
     cargo_bin_cmd!("greentic-flow")
         .arg("wizard")

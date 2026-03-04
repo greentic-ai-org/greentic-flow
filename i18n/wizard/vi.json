@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Nhập văn bản",
   "wizard.qa.prompt.enter_true_false": "Nhập true/false",
   "wizard.qa.prompt.select_option": "Chọn tùy chọn",
+  "wizard.save.confirm_exit": "Lưu thay đổi trước khi thoát? (Y/n)",
   "wizard.save.discarded": "Đã hủy các thay đổi chưa lưu.",
   "wizard.save.doctor_failed": "Không thể lưu: doctor thất bại",
   "wizard.save.done": "Đã lưu thay đổi.",

@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Adj meg szöveget",
   "wizard.qa.prompt.enter_true_false": "Adj meg igaz/hamis értéket",
   "wizard.qa.prompt.select_option": "Válassz egy opciót",
+  "wizard.save.confirm_exit": "Menti a változtatásokat kilépés előtt? (Y/n)",
   "wizard.save.discarded": "A nem mentett módosítások el lettek vetve.",
   "wizard.save.doctor_failed": "Mentés blokkolva: a doctor megbukott",
   "wizard.save.done": "Módosítások mentve.",

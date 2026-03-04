@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "ടെക്സ്റ്റ് നൽകുക",
   "wizard.qa.prompt.enter_true_false": "true/false നൽകുക",
   "wizard.qa.prompt.select_option": "ഓപ്ഷൻ തിരഞ്ഞെടുക്കുക",
+  "wizard.save.confirm_exit": "പുറത്തുകടക്കുന്നതിന് മുമ്പ് മാറ്റങ്ങൾ സംരക്ഷിക്കണോ? (Y/n)",
   "wizard.save.discarded": "സേവ് ചെയ്യാത്ത മാറ്റങ്ങൾ ഒഴിവാക്കി.",
   "wizard.save.doctor_failed": "സേവ് തടഞ്ഞു: ഡോക്ടർ പരാജയപ്പെട്ടു",
   "wizard.save.done": "മാറ്റങ്ങൾ സേവ് ചെയ്തു.",

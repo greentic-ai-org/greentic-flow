@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Ehai jehaipy",
   "wizard.qa.prompt.enter_true_false": "Ehai true/false",
   "wizard.qa.prompt.select_option": "Eiporavo peteĩ opción",
+  "wizard.save.confirm_exit": "¿Eñongatu moambuepyre osẽ mboyve? (Y/n)",
   "wizard.save.discarded": "Ñemoambue noñongatúiva oñemboyke.",
   "wizard.save.doctor_failed": "Eñongatu ojejoko: doctor ojavy",
   "wizard.save.done": "Ñemoambuekuéra oñeñongatu.",

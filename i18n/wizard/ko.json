@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "텍스트를 입력하세요",
   "wizard.qa.prompt.enter_true_false": "true/false를 입력하세요",
   "wizard.qa.prompt.select_option": "옵션을 선택하세요",
+  "wizard.save.confirm_exit": "종료하기 전에 변경 사항을 저장하시겠습니까? (Y/n)",
   "wizard.save.discarded": "저장되지 않은 변경 사항이 폐기되었습니다.",
   "wizard.save.doctor_failed": "저장 차단됨: doctor 실패",
   "wizard.save.done": "변경 사항을 저장했습니다.",

@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Xikihkuilo texto",
   "wizard.qa.prompt.enter_true_false": "Xikihkuilo melahuak/ahmo",
   "wizard.qa.prompt.select_option": "Xikpejpena opción",
+  "wizard.save.confirm_exit": "¿Ticpiyaz patlaliztin achto tiquisa? (Y/n)",
   "wizard.save.discarded": "Cambios amo mopiyāhuaya omopoloqueh.",
   "wizard.save.doctor_failed": "Amo huel save: doctor otlapoloh",
   "wizard.save.done": "Cambios omopiyāhuac.",

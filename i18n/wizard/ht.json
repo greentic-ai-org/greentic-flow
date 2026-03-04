@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Antre tèks",
   "wizard.qa.prompt.enter_true_false": "Antre vre/fo",
   "wizard.qa.prompt.select_option": "Chwazi opsyon",
+  "wizard.save.confirm_exit": "Sove chanjman yo anvan w sòti? (Y/n)",
   "wizard.save.discarded": "Chanjman ki pa t sove yo te jete.",
   "wizard.save.doctor_failed": "Sove bloke: doctor echwe",
   "wizard.save.done": "Chanjman yo sove.",

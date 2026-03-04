@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Εισαγάγετε κείμενο",
   "wizard.qa.prompt.enter_true_false": "Εισαγάγετε true/false",
   "wizard.qa.prompt.select_option": "Επιλέξτε επιλογή",
+  "wizard.save.confirm_exit": "Αποθήκευση αλλαγών πριν από την έξοδο; (Y/n)",
   "wizard.save.discarded": "Οι μη αποθηκευμένες αλλαγές απορρίφθηκαν.",
   "wizard.save.doctor_failed": "Η αποθήκευση μπλοκαρίστηκε: το doctor απέτυχε",
   "wizard.save.done": "Οι αλλαγές αποθηκεύτηκαν.",

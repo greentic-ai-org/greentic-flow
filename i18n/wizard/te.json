@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "పాఠ్యాన్ని నమోదు చేయండి",
   "wizard.qa.prompt.enter_true_false": "true/false నమోదు చేయండి",
   "wizard.qa.prompt.select_option": "ఎంపికను ఎంచుకోండి",
+  "wizard.save.confirm_exit": "నిష్క్రమించే ముందు మార్పులను సేవ్ చేయాలా? (Y/n)",
   "wizard.save.discarded": "సేవ్ చేయని మార్పులు విస్మరించబడ్డాయి.",
   "wizard.save.doctor_failed": "సేవ్ నిలిపివేయబడింది: doctor విఫలమైంది",
   "wizard.save.done": "మార్పులు సేవ్ అయ్యాయి.",

@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Ilagay ang teksto",
   "wizard.qa.prompt.enter_true_false": "Ilagay ang true/false",
   "wizard.qa.prompt.select_option": "Piliin ang opsyon",
+  "wizard.save.confirm_exit": "I-save ang mga pagbabago bago lumabas? (Y/n)",
   "wizard.save.discarded": "Ang mga pagbabagong hindi nai-save ay itinapon.",
   "wizard.save.doctor_failed": "Na-block ang pag-save: nabigo ang doctor",
   "wizard.save.done": "Na-save ang mga pagbabago.",

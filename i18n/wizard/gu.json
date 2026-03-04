@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "ટેક્સ્ટ દાખલ કરો",
   "wizard.qa.prompt.enter_true_false": "true/false દાખલ કરો",
   "wizard.qa.prompt.select_option": "વિકલ્પ પસંદ કરો",
+  "wizard.save.confirm_exit": "બહાર નીકળતા પહેલાં ફેરફારો સાચવવા? (Y/n)",
   "wizard.save.discarded": "સાચવ્યા વગરના ફેરફારો રદ કરાયા.",
   "wizard.save.doctor_failed": "સાચવવું અટકાવ્યું: doctor નિષ્ફળ ગયો",
   "wizard.save.done": "ફેરફારો સાચવાયા.",

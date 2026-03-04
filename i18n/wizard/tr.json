@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Metin girin",
   "wizard.qa.prompt.enter_true_false": "true/false girin",
   "wizard.qa.prompt.select_option": "Seçenek seçin",
+  "wizard.save.confirm_exit": "Çıkmadan önce değişiklikler kaydedilsin mi? (E/h)",
   "wizard.save.discarded": "Kaydedilmemiş değişiklikler atıldı.",
   "wizard.save.doctor_failed": "Kaydetme engellendi: doctor başarısız oldu",
   "wizard.save.done": "Değişiklikler kaydedildi.",

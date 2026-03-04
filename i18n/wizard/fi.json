@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Syötä teksti",
   "wizard.qa.prompt.enter_true_false": "Syötä true/false",
   "wizard.qa.prompt.select_option": "Valitse vaihtoehto",
+  "wizard.save.confirm_exit": "Tallennetaanko muutokset ennen poistumista? (K/e)",
   "wizard.save.discarded": "Tallentamattomat muutokset hylättiin.",
   "wizard.save.doctor_failed": "Tallennus estetty: doctor epäonnistui",
   "wizard.save.done": "Muutokset tallennettu.",

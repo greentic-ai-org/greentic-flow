@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Ievadiet tekstu",
   "wizard.qa.prompt.enter_true_false": "Ievadiet true/false",
   "wizard.qa.prompt.select_option": "Izvēlieties opciju",
+  "wizard.save.confirm_exit": "Saglabāt izmaiņas pirms iziešanas? (Y/n)",
   "wizard.save.discarded": "Nesaglabātās izmaiņas tika atmestas.",
   "wizard.save.doctor_failed": "Saglabāšana bloķēta: doctor neizdevās",
   "wizard.save.done": "Izmaiņas saglabātas.",

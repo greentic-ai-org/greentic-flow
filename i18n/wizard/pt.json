@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Digite um texto",
   "wizard.qa.prompt.enter_true_false": "Digite true/false",
   "wizard.qa.prompt.select_option": "Selecione uma opção",
+  "wizard.save.confirm_exit": "Guardar alterações antes de sair? (S/n)",
   "wizard.save.discarded": "As alterações não guardadas foram descartadas.",
   "wizard.save.doctor_failed": "Gravação bloqueada: o doctor falhou",
   "wizard.save.done": "Alterações guardadas.",

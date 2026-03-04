@@ -65,6 +65,7 @@
   "wizard.qa.prompt.enter_text": "Qillqata qillqay",
   "wizard.qa.prompt.enter_true_false": "true/false qillqay",
   "wizard.qa.prompt.select_option": "Akllanata akllay",
+  "wizard.save.confirm_exit": "¿Lluqsiykama manaraq, tikrasqakunata waqaychaychu? (Y/n)",
   "wizard.save.discarded": "Mana waqaychasqa tikraykuna wikch'usqa karqan.",
   "wizard.save.doctor_failed": "Waqaychay hark'asqa: doctor pantarqan",
   "wizard.save.done": "Tikraykuna waqaychasqa.",
